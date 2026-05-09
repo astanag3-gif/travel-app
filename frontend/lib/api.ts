@@ -8,7 +8,6 @@ const api = axios.create({
   },
 });
 
-// Автоматически добавляем JWT-токен к каждому запросу
 api.interceptors.request.use((config) => {
   const token = getToken();
   if (token) {
@@ -17,7 +16,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Обработка ошибок — если 401, убираем токен
 api.interceptors.response.use(
   (response) => response,
   (error) => {
