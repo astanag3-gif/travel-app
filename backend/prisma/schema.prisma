@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         Role      @default(USER)
+  createdAt    DateTime  @default(now())
+  bookings     Booking[]
+}
+
+model Excursion {
+  id          Int             @id @default(autoincrement())
+  title       String
+  description String
+  price       Float
+  duration    Float
+  imageUrl    String
+  format      String
+  maxPeople   Int
+  categoryId  Int
+  createdAt   DateTime        @default(now())
+  category    Category        @relation(fields: [categoryId], references: [id])
+  bookings    Booking[]
+  tags        ExcursionTag[]
+
+  @@index([categoryId])
+}
+
+model Category {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  slug       String      @unique
+  createdAt  DateTime    @default(now())
+  excursions Excursion[]
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  userId      Int
+  excursionId Int
+  people      Int
+  totalPrice  Float
+  status      BookingStatus @default(PENDING)
+  date        DateTime
+  phone       String
+  createdAt   DateTime      @default(now())
+  user        User          @relation(fields: [userId], references: [id])
+  excursion   Excursion     @relation(fields: [excursionId], references: [id])
+
+  @@index([userId])
+  @@index([excursionId])
+}
+
+model Tag {
+  id         Int            @id @default(autoincrement())
+  name       String         @unique
+  excursions ExcursionTag[]
+}
+
+model ExcursionTag {
+  excursionId Int
+  tagId       Int
+  excursion   Excursion @relation(fields: [excursionId], references: [id])
+  tag         Tag       @relation(fields: [tagId], references: [id])
+
+  @@id([excursionId, tagId])
+}
